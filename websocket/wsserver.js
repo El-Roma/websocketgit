@@ -1,23 +1,39 @@
 var WebSocketServer = require("ws").Server;
 var fs = require("fs");
 
-var ws = new WebSocketServer({port: 8100});
+var wss = new WebSocketServer({port: 8100});
 
 console.log("Server started...");
+var clientlist = [];
+function randomID() {
+    return Math.floor(Math.random() * 1000);
+}
 
-ws.on('connection', function (ws) {
+wss.on('connection', function (client) {
+
+    if (clientlist.length < 2 ) {
+        client.send("en attente de joueur")
+    }
+
+    client.id = randomID();
+    clientlist.push(client.id);
     console.log("Browser connected online...")
 
-    ws.on("message", function (str) {
-        console.log(str)
-        let test = str.toString();
-        let ob = JSON.parse(test)
+    console.log(clientlist)
 
-        console.log(ob)
-        ws.send(JSON.stringify(ob))
+    //ws.id = Math.random();
+
+    client.on("message", function (str) {
+        //console.log(str)
+        let message = str.toString();
+        let obj = JSON.parse(message)
+
+        client.send(JSON.stringify(obj))
     })
 
-    ws.on("close", function () {
+
+    client.on("close", function () {
         console.log("Browser gone.")
+        clientlist.pop(client.id);
     })
 });
